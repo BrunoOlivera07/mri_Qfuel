@@ -1,4 +1,12 @@
--- Create Table for Fuel Stations --
+-- --------------------------------------------------------
+-- CDN-Fuel Master Database Schema
+-- Organized & Filtered (Standard Stations 1-27)
+-- --------------------------------------------------------
+
+--
+-- Table structure for `fuel_stations`
+--
+
 CREATE TABLE IF NOT EXISTS `fuel_stations` (
   `location` int(11) NOT NULL,
   `owned` int(11) DEFAULT NULL,
@@ -7,34 +15,80 @@ CREATE TABLE IF NOT EXISTS `fuel_stations` (
   `fuelprice` int(11) DEFAULT NULL,
   `balance` int(255) DEFAULT NULL,
   `label` varchar(255) DEFAULT NULL,
+  `shutoff` tinyint(1) DEFAULT 0,
+  `zones` longtext DEFAULT NULL,
+  `minz` float DEFAULT NULL,
+  `maxz` float DEFAULT NULL,
+  `pedmodel` varchar(50) DEFAULT NULL,
+  `pedcoords` text DEFAULT NULL,
+  `cost` int(11) DEFAULT 100000,
+  `pumpheightadd` float DEFAULT 2.1,
+  `electricchargercoords` text DEFAULT NULL,
+  `fuelpumpcoords` longtext DEFAULT NULL,
+  `logo` longtext DEFAULT NULL,
   PRIMARY KEY (`location`)
-) ENGINE=InnoDB;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- Insert Default Information into the Table Created! --
-INSERT INTO `fuel_stations` (`location`, `owned`, `owner`, `fuel`, `fuelprice`, `balance`, `label`) VALUES (1, 0, '0', 100000, 3, 0, 'Davis Avenue Ron');
-INSERT INTO `fuel_stations` (`location`, `owned`, `owner`, `fuel`, `fuelprice`, `balance`, `label`) VALUES (2, 0, '0', 100000, 3, 0, 'Grove Street LTD');
-INSERT INTO `fuel_stations` (`location`, `owned`, `owner`, `fuel`, `fuelprice`, `balance`, `label`) VALUES (3, 0, '0', 100000, 3, 0, 'Dutch London Xero');
-INSERT INTO `fuel_stations` (`location`, `owned`, `owner`, `fuel`, `fuelprice`, `balance`, `label`) VALUES (4, 0, '0', 100000, 3, 0, 'Little Seoul LTD');
-INSERT INTO `fuel_stations` (`location`, `owned`, `owner`, `fuel`, `fuelprice`, `balance`, `label`) VALUES (5, 0, '0', 100000, 3, 0, 'Strawberry Ave Xero');
-INSERT INTO `fuel_stations` (`location`, `owned`, `owner`, `fuel`, `fuelprice`, `balance`, `label`) VALUES (6, 0, '0', 100000, 3, 0, 'Popular Street Ron');
-INSERT INTO `fuel_stations` (`location`, `owned`, `owner`, `fuel`, `fuelprice`, `balance`, `label`) VALUES (7, 0, '0', 100000, 3, 0, 'Capital Blvd Ron');
-INSERT INTO `fuel_stations` (`location`, `owned`, `owner`, `fuel`, `fuelprice`, `balance`, `label`) VALUES (8, 0, '0', 100000, 3, 0, 'Mirror Park LTD');
-INSERT INTO `fuel_stations` (`location`, `owned`, `owner`, `fuel`, `fuelprice`, `balance`, `label`) VALUES (9, 0, '0', 100000, 3, 0, 'Clinton Ave Globe Oil');
-INSERT INTO `fuel_stations` (`location`, `owned`, `owner`, `fuel`, `fuelprice`, `balance`, `label`) VALUES (10, 0, '0', 100000, 3, 0, 'North Rockford Ron');
-INSERT INTO `fuel_stations` (`location`, `owned`, `owner`, `fuel`, `fuelprice`, `balance`, `label`) VALUES (11, 0, '0', 100000, 3, 0, 'Great Ocean Xero');
-INSERT INTO `fuel_stations` (`location`, `owned`, `owner`, `fuel`, `fuelprice`, `balance`, `label`) VALUES (12, 0, '0', 100000, 3, 0, 'Paleto Blvd Xero');
-INSERT INTO `fuel_stations` (`location`, `owned`, `owner`, `fuel`, `fuelprice`, `balance`, `label`) VALUES (13, 0, '0', 100000, 3, 0, 'Paleto Ron');
-INSERT INTO `fuel_stations` (`location`, `owned`, `owner`, `fuel`, `fuelprice`, `balance`, `label`) VALUES (14, 0, '0', 100000, 3, 0, 'Paleto Globe Oil');
-INSERT INTO `fuel_stations` (`location`, `owned`, `owner`, `fuel`, `fuelprice`, `balance`, `label`) VALUES (15, 0, '0', 100000, 3, 0, 'Grapeseed LTD');
-INSERT INTO `fuel_stations` (`location`, `owned`, `owner`, `fuel`, `fuelprice`, `balance`, `label`) VALUES (16, 0, '0', 100000, 3, 0, 'Sandy Shores Xero');
-INSERT INTO `fuel_stations` (`location`, `owned`, `owner`, `fuel`, `fuelprice`, `balance`, `label`) VALUES (17, 0, '0', 100000, 3, 0, 'Sandy Shores Globe Oil');
-INSERT INTO `fuel_stations` (`location`, `owned`, `owner`, `fuel`, `fuelprice`, `balance`, `label`) VALUES (18, 0, '0', 100000, 3, 0, 'Senora Freeway Xero');
-INSERT INTO `fuel_stations` (`location`, `owned`, `owner`, `fuel`, `fuelprice`, `balance`, `label`) VALUES (19, 0, '0', 100000, 3, 0, 'Harmony Globe Oil');
-INSERT INTO `fuel_stations` (`location`, `owned`, `owner`, `fuel`, `fuelprice`, `balance`, `label`) VALUES (20, 0, '0', 100000, 3, 0, 'Route 68 Globe Oil');
-INSERT INTO `fuel_stations` (`location`, `owned`, `owner`, `fuel`, `fuelprice`, `balance`, `label`) VALUES (21, 0, '0', 100000, 3, 0, 'Route 68 Workshop Globe O');
-INSERT INTO `fuel_stations` (`location`, `owned`, `owner`, `fuel`, `fuelprice`, `balance`, `label`) VALUES (22, 0, '0', 100000, 3, 0, 'Route 68 Xero');
-INSERT INTO `fuel_stations` (`location`, `owned`, `owner`, `fuel`, `fuelprice`, `balance`, `label`) VALUES (23, 0, '0', 100000, 3, 0, 'Route 68 Ron');
-INSERT INTO `fuel_stations` (`location`, `owned`, `owner`, `fuel`, `fuelprice`, `balance`, `label`) VALUES (24, 0, '0', 100000, 3, 0, "Rex\'s Diner Globe Oil");
-INSERT INTO `fuel_stations` (`location`, `owned`, `owner`, `fuel`, `fuelprice`, `balance`, `label`) VALUES (25, 0, '0', 100000, 3, 0, 'Palmino Freeway Ron');
-INSERT INTO `fuel_stations` (`location`, `owned`, `owner`, `fuel`, `fuelprice`, `balance`, `label`) VALUES (26, 0, '0', 100000, 3, 0, 'North Rockford LTD');
-INSERT INTO `fuel_stations` (`location`, `owned`, `owner`, `fuel`, `fuelprice`, `balance`, `label`) VALUES (27, 0, '0', 100000, 3, 0, 'Alta Street Globe Oil');
+--
+-- Table structure for `fuel_sales_log`
+--
+
+CREATE TABLE IF NOT EXISTS `fuel_sales_log` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `station_id` int(11) NOT NULL,
+  `buyer_identifier` varchar(50) DEFAULT NULL,
+  `buyer_name` varchar(100) DEFAULT NULL,
+  `liters` float NOT NULL,
+  `cost` int(11) NOT NULL,
+  `timestamp` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `station_id` (`station_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+--
+-- Table structure for `fuel_weekly_logs`
+--
+
+CREATE TABLE IF NOT EXISTS `fuel_weekly_logs` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `station_id` int(11) NOT NULL,
+  `week_start` date NOT NULL,
+  `total_liters` float DEFAULT 0,
+  `total_sales` int(11) DEFAULT 0,
+  `revenue` int(11) DEFAULT 0,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `unique_station_week` (`station_id`, `week_start`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+--
+-- Dumping data for table `fuel_stations`
+--
+
+INSERT INTO `fuel_stations` (`location`, `owned`, `owner`, `fuel`, `fuelprice`, `balance`, `label`, `shutoff`, `zones`, `minz`, `maxz`, `pedmodel`, `pedcoords`, `cost`, `pumpheightadd`, `electricchargercoords`, `fuelpumpcoords`, `logo`) VALUES
+	(1, 0, '0', 50000, 3, 0, 'Davis Avenue Ron', 0, '[{"x":176.89,"y":-1538.26},{"x":151.52,"y":-1560.98},{"x":168.56,"y":-1577.65},{"x":196.97,"y":-1563.64}]', 28.2, 30.3, 'a_m_m_indian_01', '{"x":167.06,"y":-1553.56,"z":28.26,"w":220.44}', 100000, 2.1, '{"x":175.9,"y":-1546.65,"z":28.26,"w":44.29}', NULL, NULL),
+	(2, 0, '0', 50000, 3, 0, 'Grove Street LTD', 0, '[{"x":-53.03,"y":-1737.5},{"x":-92.8,"y":-1751.89},{"x":-91.29,"y":-1759.09},{"x":-65.53,"y":-1782.58},{"x":-36.36,"y":-1751.52}]', 28.2, 30.4, 'a_m_m_indian_01', '{"x":-40.94,"y":-1751.7,"z":28.42,"w":140.72}', 100000, 2.1, '{"x":-51.09,"y":-1767.02,"z":28.26,"w":227.16}', NULL, NULL),
+	(3, 0, '0', 50000, 3, 0, 'Dutch London Xero', 0, '[{"x":-543.94,"y":-1218.18},{"x":-533.71,"y":-1191.67},{"x":-500.0,"y":-1204.55},{"x":-521.97,"y":-1232.58}]', 17.4, 21.04, 'a_m_m_indian_01', '{"x":-531.2,"y":-1220.83,"z":17.45,"w":335.73}', 100000, 2.1, '{"x":-514.06,"y":-1216.25,"z":17.46,"w":246.29}', NULL, NULL),
+	(4, 0, '0', 50000, 3, 0, 'Little Seoul LTD', 0, '[{"x":-696.77,"y":-948.94},{"x":-739.47,"y":-951.07},{"x":-734.73,"y":-906.5},{"x":-711.0,"y":-906.76},{"x":-710.65,"y":-903.27},{"x":-696.82,"y":-903.21}]', 18, 20.4, 'a_m_m_indian_01', '{"x":-705.66,"y":-905.04,"z":18.22,"w":179.46}', 100000, 2.1, '{"x":-704.64,"y":-935.71,"z":18.21,"w":270.02}', NULL, NULL),
+	(5, 0, '0', 50000, 3, 0, 'Strawberry Ave Xero', 0, '[{"x":243.18,"y":-1281.82},{"x":243.94,"y":-1228.41},{"x":299.62,"y":-1228.03},{"x":300.76,"y":-1286.36}]', 28.1, 31.3, 'a_m_m_indian_01', '{"x":288.83,"y":-1267.01,"z":28.44,"w":93.81}', 100000, 2.1, '{"x":279.79,"y":-1237.35,"z":28.35,"w":1.07}', NULL, NULL),
+	(6, 0, '0', 50000, 3, 0, 'Popular Street Ron', 0, '[{"x":798.48,"y":-1017.05},{"x":801.89,"y":-1061.74},{"x":847.73,"y":-1063.26},{"x":845.08,"y":-1015.91}]', 25.1, 28.1, 'a_m_m_indian_01', '{"x":816.42,"y":-1040.51,"z":25.75,"w":2.07}', 100000, 2.1, '{"x":834.27,"y":-1028.7,"z":26.16,"w":268.39}', NULL, NULL),
+	(7, 0, '0', 50000, 8, 0, 'Capital Blvd Ron', 0, '[{"x":1212.12,"y":-1381.44},{"x":1221.21,"y":-1395.08},{"x":1219.7,"y":-1403.41},{"x":1207.58,"y":-1417.05},{"x":1194.7,"y":-1418.94},{"x":1192.8,"y":-1389.02}]', 34.1, 36.3, 'a_m_m_indian_01', '{"x":1211.13,"y":-1389.18,"z":34.38,"w":177.39}', 100000, 2.1, '{"x":1194.41,"y":-1394.44,"z":34.37,"w":90.3}', NULL, NULL),
+	(8, 0, '0', 50000, 3, 0, 'Mirror Park LTD', 0, '[{"x":1188.28,"y":-306.38},{"x":1145.24,"y":-314.19},{"x":1150.81,"y":-346.52},{"x":1195.44,"y":-353.92},{"x":1197.01,"y":-340.55}]', 67.1, 70.7, 'a_m_m_indian_01', '{"x":1163.64,"y":-314.21,"z":68.21,"w":190.92}', 100000, 2.1, '{"x":1168.38,"y":-323.56,"z":68.3,"w":100.22}', NULL, NULL),
+	(9, 0, '0', 50000, 3, 0, 'Clinton Ave Globe Oil', 0, '[{"x":650.76,"y":229.92},{"x":599.24,"y":256.44},{"x":598.48,"y":271.21},{"x":610.61,"y":287.88},{"x":634.85,"y":289.39},{"x":664.77,"y":271.21}]', 101.9, 104.8, 'a_m_m_indian_01', '{"x":642.08,"y":260.59,"z":102.3,"w":61.39}', 100000, 2.1, '{"x":633.64,"y":247.22,"z":102.3,"w":240.29}', NULL, NULL),
+	(10, 0, '0', 50000, 3, 0, 'North Rockford Ron', 0, '[{"x":-1460.98,"y":-276.89},{"x":-1419.32,"y":-237.12},{"x":-1390.91,"y":-270.45},{"x":-1435.23,"y":-305.68}]', 45, 47.3, 'a_m_m_indian_01', '{"x":-1428.4,"y":-268.69,"z":45.21,"w":132.94}', 100000, 2.1, '{"x":-1420.51,"y":-278.76,"z":45.26,"w":317.35}', NULL, NULL),
+	(11, 0, '0', 50000, 3, 0, 'Great Ocean Xero', 0, '[{"x":-2135.61,"y":-327.27},{"x":-2134.85,"y":-286.36},{"x":-2051.52,"y":-300.0},{"x":-2054.55,"y":-345.45},{"x":-2081.82,"y":-347.73},{"x":-2113.64,"y":-343.18}]', 12, 14.3, 'a_m_m_indian_01', '{"x":-2074.28,"y":-327.22,"z":12.32,"w":132.94}', 100000, 2.1, '{"x":-2080.61,"y":-338.52,"z":12.26,"w":172.21}', NULL, NULL),
+	(12, 0, '0', 50000, 3, 0, 'Paleto Blvd Xero', 0, '[{"x":-91.5,"y":6431.47},{"x":-77.83,"y":6419.75},{"x":-101.06,"y":6397.01},{"x":-113.59,"y":6409.91}]', 30.34, 33.5, 'a_m_m_indian_01', '{"x":-93.02,"y":6410.11,"z":30.64,"w":49.19}', 100000, 1.5, '{"x":-98.12,"y":6403.39,"z":30.64,"w":321.49}', NULL, NULL),
+	(13, 0, '0', 50000, 3, 0, 'Paleto Ron', 0, '[{"x":167.08,"y":6631.73},{"x":176.47,"y":6640.66},{"x":199.71,"y":6632.08},{"x":202.3,"y":6597.25},{"x":162.95,"y":6590.22},{"x":158.64,"y":6610.64}]', 30.7, 33.4, 'a_m_m_indian_01', '{"x":170.44,"y":6633.74,"z":30.59,"w":221.95}', 100000, 2.1, '{"x":181.14,"y":6636.17,"z":30.61,"w":359.96}', NULL, NULL),
+	(14, 0, '0', 50000, 3, 0, 'Paleto Globe Oil', 0, '[{"x":1684.5,"y":6413.73},{"x":1693.67,"y":6431.38},{"x":1721.72,"y":6428.14},{"x":1710.47,"y":6402.65}]', 31.4, 34.2, 'a_m_m_indian_01', '{"x":1698.62,"y":6425.84,"z":31.76,"w":156.61}', 100000, 2.1, '{"x":1714.14,"y":6425.44,"z":31.79,"w":335.94}', NULL, NULL),
+	(15, 0, '0', 50000, 3, 0, 'Grapeseed LTD', 0, '[{"x":1696.59,"y":4939.02},{"x":1723.48,"y":4920.08},{"x":1698.11,"y":4886.74},{"x":1669.7,"y":4907.2},{"x":1678.41,"y":4929.17}]', 41.05, 43.17, 'a_m_m_indian_01', '{"x":1704.59,"y":4917.5,"z":41.06,"w":52.16}', 100000, 1.5, '{"x":1703.57,"y":4937.23,"z":41.08,"w":235.74}', NULL, NULL),
+	(16, 0, '0', 50000, 3, 0, 'Sandy Shores Xero', 0, '[{"x":1972.35,"y":3777.27},{"x":1989.02,"y":3748.11},{"x":2018.18,"y":3762.12},{"x":2001.52,"y":3790.91}]', 31.18, 33.6, 'a_m_m_indian_01', '{"x":2001.33,"y":3779.87,"z":31.18,"w":211.44}', 100000, 1.5, '{"x":1994.54,"y":3778.44,"z":31.18,"w":35.25}', NULL, NULL),
+	(17, 0, '0', 50000, 3, 0, 'Sandy Shores Globe Oil', 0, '[{"x":1774.24,"y":3308.71},{"x":1752.65,"y":3345.83},{"x":1784.47,"y":3357.95},{"x":1808.71,"y":3321.21}]', 39, 44.6, 'a_m_m_indian_01', '{"x":1776.57,"y":3327.36,"z":40.43,"w":297.57}', 100000, 1.5, '{"x":1770.86,"y":3337.97,"z":40.43,"w":121.1}', NULL, NULL),
+	(18, 0, '0', 50000, 3, 0, 'Senora Freeway Xero', 0, '[{"x":2671.21,"y":3290.53},{"x":2649.62,"y":3254.55},{"x":2682.95,"y":3237.5},{"x":2703.79,"y":3275.38}]', 54.24, 56.4, 'a_m_m_indian_01', '{"x":2673.98,"y":3266.87,"z":54.24,"w":240.9}', 100000, 1.5, '{"x":2690.25,"y":3265.62,"z":54.24,"w":238.98}', NULL, NULL),
+	(19, 0, '0', 50000, 3, 0, 'Harmony Globe Oil', 0, '[{"x":1188.64,"y":2651.89},{"x":1202.27,"y":2663.64},{"x":1212.5,"y":2661.74},{"x":1217.05,"y":2651.52},{"x":1210.61,"y":2633.33},{"x":1201.52,"y":2638.26}]', 36.7, 38.85, 'a_m_m_indian_01', '{"x":1201.68,"y":2655.24,"z":36.85,"w":322.97}', 100000, 1.5, '{"x":1208.26,"y":2649.46,"z":36.85,"w":42.32}', NULL, NULL),
+	(20, 0, '0', 50000, 3, 0, 'Route 68 Globe Oil', 0, '[{"x":1026.14,"y":2669.7},{"x":1028.03,"y":2640.91},{"x":1058.33,"y":2640.53},{"x":1055.3,"y":2668.94}]', 38.24, 40.55, 'a_m_m_indian_01', '{"x":1039.44,"y":2664.37,"z":38.55,"w":10.07}', 100000, 1.5, '{"x":1033.32,"y":2662.91,"z":38.55,"w":275.38}', NULL, NULL),
+	(21, 0, '0', 50000, 3, 0, 'Route 68 Workshop Globe Oil', 0, '[{"x":269.7,"y":2606.44},{"x":275.38,"y":2585.23},{"x":241.29,"y":2576.52},{"x":235.23,"y":2609.09},{"x":268.56,"y":2617.05}]', 43.6, 45.95, 'a_m_m_indian_01', '{"x":265.89,"y":2598.3,"z":43.84,"w":9.88}', 100000, 1.5, '{"x":267.96,"y":2599.47,"z":43.69,"w":185.8}', NULL, NULL),
+	(22, 0, '0', 50000, 3, 0, 'Route 68 Xero', 0, '[{"x":46.59,"y":2795.45},{"x":27.65,"y":2775.76},{"x":49.24,"y":2754.55},{"x":68.56,"y":2778.03}]', 56.8, 58.9, 'a_m_m_indian_01', '{"x":46.53,"y":2789.05,"z":56.88,"w":143.93}', 100000, 1.5, '{"x":50.21,"y":2787.38,"z":56.88,"w":327.2}', NULL, NULL),
+	(23, 0, '0', 50000, 3, 0, 'Route 68 Ron', 0, '[{"x":-2562.12,"y":2340.53},{"x":-2560.98,"y":2299.62},{"x":-2514.39,"y":2300.76},{"x":-2516.29,"y":2314.02},{"x":-2523.86,"y":2344.7}]', 32.05, 34.08, 'a_m_m_indian_01', '{"x":-2544.04,"y":2316.15,"z":32.22,"w":2.5}', 100000, 2.1, '{"x":-2570.04,"y":2317.1,"z":32.22,"w":201.29}', NULL, NULL),
+	(24, 0, '0', 50000, 3, 0, 'Rex\'s Diner Globe Oil', 0, '[{"x":2545.08,"y":2601.14},{"x":2556.06,"y":2573.11},{"x":2545.83,"y":2568.56},{"x":2531.06,"y":2601.14},{"x":2540.91,"y":2599.24}]', 36.94, 38.94, 'a_m_m_indian_01', '{"x":2545.02,"y":2591.72,"z":36.96,"w":113.52}', 100000, 1.5, '{"x":2545.81,"y":2586.18,"z":36.94,"w":263.74}', NULL, NULL),
+	(25, 0, '0', 50000, 3, 0, 'Palmino Freeway Ron', 0, '[{"x":2540.15,"y":373.86},{"x":2538.26,"y":345.83},{"x":2592.8,"y":343.56},{"x":2594.7,"y":369.7},{"x":2557.58,"y":384.85}]', 107.4, 109.4, 'a_m_m_indian_01', '{"x":2559.36,"y":373.68,"z":107.62,"w":272.2}', 100000, 2.1, '{"x":2561.24,"y":357.3,"z":107.62,"w":86.65}', NULL, NULL),
+	(26, 0, '0', 50000, 3, 0, 'North Rockford LTD', 0, '[{"x":-1820.41,"y":767.31},{"x":-1775.49,"y":802.95},{"x":-1798.5,"y":828.42},{"x":-1841.71,"y":791.66}]', 136.64, 139.9, 'a_m_m_indian_01', '{"x":-1825.33,"y":800.96,"z":137.1,"w":220.96}', 100000, 2.1, '{"x":-1819.22,"y":798.51,"z":137.16,"w":135.13}', NULL, NULL),
+	(27, 0, '0', 50000, 3, 0, 'Alta Street Globe Oil', 0, '[{"x":-354.55,"y":-1452.65},{"x":-354.17,"y":-1499.62},{"x":-301.52,"y":-1497.73},{"x":-296.59,"y":-1453.03}]', 29.5, 31.9, 'a_m_m_indian_01', '{"x":-342.37,"y":-1482.97,"z":29.71,"w":273.47}', 100000, 2.1, '{"x":-341.63,"y":-1459.39,"z":29.76,"w":91.73}', NULL, NULL);

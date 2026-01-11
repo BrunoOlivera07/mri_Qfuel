@@ -209,129 +209,40 @@ if Config.ElectricVehicleCharging then
         local vehicle = GetClosestVehicle()
         local vehModel = GetEntityModel(vehicle)
         local vehiclename = string.lower(GetDisplayNameFromVehicleModel(vehModel))
-        AwaitingElectricCheck = true
-        FoundElectricVehicle = false
-        :: ChargingMenu :: -- Register the starting point for the goto
-        if not AwaitingElectricCheck then if Config.FuelDebug then print("Attempting to go to Charging Menu") end end
-        if not AwaitingElectricCheck and FoundElectricVehicle then
-            local CurFuel = GetVehicleFuelLevel(vehicle)
-            local playercashamount = QBCore.Functions.GetPlayerData().money['cash']
-            if not IsHoldingElectricNozzle() then QBCore.Functions.Notify(Lang:t("electric_no_nozzle"), 'error', 7500)  return end
-            if CurFuel < 95 then
-                if Config.Ox.Menu then
-                    lib.registerContext({
-                        id = 'electricmenu',
-                        title = Config.GasStations[FetchCurrentLocation()].label,
-                        options = {
-                            {
-                                title = Lang:t("menu_header_cash"),
-                                description = Lang:t("menu_pay_with_cash") .. playercashamount,
-                                icon = "fas fa-usd",
-                                arrow = false, -- puts arrow to the right
-                                event = "cdn-fuel:client:electric:FinalMenu",
-                                args = 'cash',
-                            },
-                            {
-                                title = Lang:t("menu_header_bank"),
-                                description = Lang:t("menu_pay_with_bank"),
-                                icon = "fas fa-credit-card",
-                                arrow = false, -- puts arrow to the right
-                                event = "cdn-fuel:client:electric:FinalMenu",
-                                args = 'bank',
-                            },
-                            {
-                                title = Lang:t("menu_header_close"),
-                                description = Lang:t("menu_refuel_cancel"),
-                                icon = "fas fa-times-circle",
-                                arrow = false, -- puts arrow to the right
-                                onSelect = function()
-                                    lib.hideContext()
-                                end,
-                            },
-                        },
-                    })
-                    lib.showContext('electricmenu')
-                else
-                    exports['qb-menu']:openMenu({
-                        {
-                            header = Config.GasStations[FetchCurrentLocation()].label,
-                            isMenuHeader = true,
-                            icon = "fas fa-bolt",
-                        },
-                        {
-                            header = Lang:t("menu_header_cash"),
-                            txt = Lang:t("menu_pay_with_cash") .. playercashamount,
-                            icon = "fas fa-usd",
-                            params = {
-                                event = "cdn-fuel:client:electric:FinalMenu",
-                                args = 'cash',
-                            }
-                        },
-                        {
-                            header = Lang:t("menu_header_bank"),
-                            txt = Lang:t("menu_pay_with_bank"),
-                            icon = "fas fa-credit-card",
-                            params = {
-                                event = "cdn-fuel:client:electric:FinalMenu",
-                                args = 'bank',
-                            }
-                        },
-                        {
-                            header = Lang:t("menu_header_close"),
-                            txt = Lang:t("menu_electric_cancel"),
-                            icon = "fas fa-times-circle",
-                            params = {
-                                event = "qb-menu:closeMenu",
-                            }
-                        },
-                    })
-                end
-            else
-                QBCore.Functions.Notify(Lang:t("tank_already_full"), 'error')
-            end
-        else
-            if Config.FuelDebug then print("Checking") end
-            if AwaitingElectricCheck then
-                if Config.ElectricVehicles[vehiclename] and Config.ElectricVehicles[vehiclename].isElectric then
-                    AwaitingElectricCheck = false
-                    FoundElectricVehicle = true
-                    if Config.FuelDebug then print("^2"..current.. "^5 has been found. It ^2matches ^5the Player's Vehicle: ^2"..vehiclename..". ^5This means charging will be allowed.") end
-                    Wait(50)
-                    goto ChargingMenu -- Attempt to go to the charging menu, now that we have found that there was an electric vehicle.
-                else
-                    FoundElectricVehicle = false
-                    AwaitingElectricCheck = false
-                    Wait(50)
-                    if Config.FuelDebug then print("^2An electric vehicle^5 has NOT been found. ^5This means charging will not be allowed.") end
-                    goto ChargingMenu -- Attempt to go to the charging menu, now that we have not found that there was an electric vehicle.
-                end
-
-                -- for i = 1, #Config.ElectricVehicles do
-                --     if AwaitingElectricCheck then
-                --         if Config.FuelDebug then print(i) end
-                --         local current = joaat(Config.ElectricVehicles[i])
-                --         if Config.FuelDebug then print("^5Current Search: ^2"..current.." ^5Player's Vehicle: ^2"..vehiclename) end
-                --         if current == vehiclename then
-                --             AwaitingElectricCheck = false
-                --             FoundElectricVehicle = true
-                --             if Config.FuelDebug then print("^2"..current.. "^5 has been found. It ^2matches ^5the Player's Vehicle: ^2"..vehiclename..". ^5This means charging will be allowed.") end
-                --             Wait(50)
-                --             goto ChargingMenu -- Attempt to go to the charging menu, now that we have found that there was an electric vehicle.
-                --         elseif i == #Config.ElectricVehicles then
-                --             FoundElectricVehicle = false
-                --             AwaitingElectricCheck = false
-                --             Wait(50)
-                --             if Config.FuelDebug then print("^2An electric vehicle^5 has NOT been found. ^5This means charging will not be allowed.") end
-                --             goto ChargingMenu -- Attempt to go to the charging menu, now that we have not found that there was an electric vehicle.
-                --         end
-                --     else
-                --         if Config.FuelDebug then print('Search ended..') end
-                --     end
-                -- end
-            else
-                QBCore.Functions.Notify(Lang:t("electric_vehicle_not_electric"), 'error', 7500)
-            end
+        local currentFuel = GetFuel(vehicle)
+        
+        -- Check if vehicle is electric (using same logic as before)
+        local isElectric = false
+        if Config.ElectricVehicles[vehiclename] and Config.ElectricVehicles[vehiclename].isElectric then
+             isElectric = true
         end
+
+        if not isElectric then
+            QBCore.Functions.Notify(Lang:t("electric_vehicle_not_electric"), 'error', 7500)
+            return
+        end
+
+        if not IsHoldingElectricNozzle() then 
+            QBCore.Functions.Notify(Lang:t("electric_no_nozzle"), 'error', 7500) 
+            return 
+        end
+
+        if currentFuel >= 95 then
+            QBCore.Functions.Notify(Lang:t("tank_already_full"), 'error')
+            return
+        end
+
+         -- Open NUI
+        SetNuiFocus(true, true)
+        SendNUIMessage({
+            action = "open",
+            data = {
+                maxFuel = (100 - math.ceil(currentFuel)), -- Max kWh needed
+                currentFuel = currentFuel,
+                price = Config.ElectricChargingPrice,
+                type = 'electric'
+            }
+        })
     end)
 
     RegisterNetEvent('cdn-fuel:client:electric:ChargeVehicle', function(data)
@@ -700,7 +611,7 @@ if Config.ElectricVehicleCharging then
             for i = 1, #Config.GasStations do
                 if Config.GasStations[i].electricchargercoords ~= nil then
                     if Config.FuelDebug then print(i) end
-                    local heading = Config.GasStations[i].electricchargercoords[4] - 180
+                    local heading = Config.GasStations[i].electricchargercoords[4]
                     Config.GasStations[i].electriccharger = CreateObject('electric_charger', Config.GasStations[i].electricchargercoords.x, Config.GasStations[i].electricchargercoords.y, Config.GasStations[i].electricchargercoords.z, false, true, true)
                     if Config.FuelDebug then print("Created Electric Charger @ Location #"..i) end
                     SetEntityHeading(Config.GasStations[i].electriccharger, heading)
