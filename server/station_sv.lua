@@ -159,28 +159,32 @@ if Config.PlayerOwnedGasStationsEnabled then -- This is so Player Owned Gas Stat
         local amount = amount
         local src = source
         local Player = QBCore.Functions.GetPlayer(src)
+        local OldBalance = 0
         local result = MySQL.Sync.fetchAll('SELECT * FROM fuel_stations WHERE `location` = ?', {location})
-        if result then
-            if Config.FuelDebug then print("Result Fetched!") end
-            for k, v in pairs(result) do
-                local gasstationinfo = json.encode(v)
-                if Config.FuelDebug then print(gasstationinfo) print(v.fuel) end
-                if v.fuel + amount > Config.MaxFuelReserves then
-                    ReserveBuyPossible = false
-                    if Config.FuelDebug then print("Purchase is not possible, as reserves will be greater than the maximum amount!") end
-                    TriggerClientEvent('QBCore:Notify', src, Lang:t("station_reserves_over_max"), 'error')
-                elseif v.fuel + amount <= Config.MaxFuelReserves then
+        if result and result[1] then
+            local v = result[1]
+            if Config.FuelDebug then print(json.encode(v)) print(v.fuel) end
+            if v.fuel + amount > Config.MaxFuelReserves then
+                ReserveBuyPossible = false
+                if Config.FuelDebug then print("Purchase is not possible, as reserves will be greater than the maximum amount!") end
+                TriggerClientEvent('QBCore:Notify', src, Lang:t("station_reserves_over_max"), 'error')
+            else
+                OldBalance = tonumber(v.balance) or 0
+                if OldBalance >= price then
                     ReserveBuyPossible = true
-                    OldAmount = v.fuel
+                    OldAmount = tonumber(v.fuel) or 0
                     NewAmount = OldAmount + amount
-                    if Config.FuelDebug then print("Purchase is possible, as reserves will be below or equal to the maximum amount!") end
+                    if Config.FuelDebug then print("Purchase is possible, as reserves will be below or equal to the maximum amount and station has sufficient balance!") end
                 else
-                    if Config.FuelDebug then print('error fetching v.fuel') end
+                    ReserveBuyPossible = false
+                    TriggerClientEvent('QBCore:Notify', src, 'O posto não tem dinheiro suficiente no caixa para comprar reservas!', 'error')
+                    if Config.FuelDebug then print("Purchase is not possible, station balance is insufficient! Found: $"..OldBalance.." Required: $"..price) end
                 end
             end
         else
             if Config.FuelDebug then print("No Result Fetched!!") end
         end
+        
         if Config.FuelDebug then print("Attempting Sale Server Side for location: #"..location.." for Price: $"..price) end
 
         local status = exports['maji-gasdelivery']:Refuelcdn_status()
@@ -189,10 +193,14 @@ if Config.PlayerOwnedGasStationsEnabled then -- This is so Player Owned Gas Stat
             return
         end
 
-        if ReserveBuyPossible and Player.Functions.RemoveMoney("bank", price, "Purchased"..amount.."L of Reserves for: "..Config.GasStations[location].label.." @ $"..Config.FuelReservesPrice.." / L!") then
+        if ReserveBuyPossible then
+            local newBalance = OldBalance - price
+            MySQL.Async.execute('UPDATE fuel_stations SET balance = ? WHERE `location` = ?', {newBalance, location})
+
             if not Config.OwnersPickupFuel then
                 MySQL.Async.execute('UPDATE fuel_stations SET fuel = ? WHERE `location` = ?', {NewAmount, location})
                 if Config.FuelDebug then print("SQL Execute Update: fuel_station level to: "..NewAmount.. " Math: ("..amount.." + "..OldAmount.." = "..NewAmount) end
+                TriggerClientEvent('QBCore:Notify', src, "Reserva comprada com o dinheiro do posto! Descontado: $"..price, 'success')
             else
                 FuelPickupSent[location] = {
                     ['src'] = src,
@@ -202,13 +210,11 @@ if Config.PlayerOwnedGasStationsEnabled then -- This is so Player Owned Gas Stat
                 TriggerClientEvent("md-refuelcdn:client:set", -1, amount, NewAmount, location)
                 TriggerEvent("md-refuelcdn:server:set")
                 TriggerClientEvent('QBCore:Notify', -1, "Um novo carregamento de combustível está disponível!", 'success', 30000)
-
+                TriggerClientEvent('QBCore:Notify', src, "Reserva solicitada com o dinheiro do posto! Descontado: $"..price, 'success')
+                
                 -- TriggerClientEvent('cdn-fuel:station:client:initiatefuelpickup', src, amount, NewAmount, location)
                 if Config.FuelDebug then print("Initiating a Fuel Pickup for Location: "..location.." with for the amount of "..NewAmount.." | Triggered By: Source: "..src) end
             end
-
-        elseif ReserveBuyPossible then
-            TriggerClientEvent('QBCore:Notify', src, Lang:t("not_enough_money"), 'error')
         end
     end)
 
@@ -519,20 +525,65 @@ if Config.PlayerOwnedGasStationsEnabled then -- This is so Player Owned Gas Stat
 
     -- Startup Process
     local function Startup()
-        if Config.FuelDebug then print("Startup process...") end
+        if Config.FuelDebug then print("Startup process check...") end
         
-        -- Load Dynamic Stations First
-        LoadDynamicStations()
+        local function ContinueStartup()
+            -- Load Dynamic Stations First
+            LoadDynamicStations()
 
-        local location = 0
-        for value in ipairs(Config.GasStations) do
-            location = location + 1
-            UpdateStationLabel(location)
+            local location = 0
+            for value in ipairs(Config.GasStations) do
+                location = location + 1
+                UpdateStationLabel(location)
+            end
+            print("^2[CDN-Fuel] Database integration active & Verified.^7")
         end
 
-        -- Sync Shutoff States from DB is now handled by LoadDynamicStations (LoadStationsFromDB)
-        -- which loads EVERYTHING from the database directly.
-        print("CDN-Fuel: Database integration active.")
+        -- Check if table exists
+        MySQL.Async.fetchAll("SHOW TABLES LIKE 'fuel_stations'", {}, function(result)
+            if result and #result > 0 then
+                ContinueStartup()
+            else
+                print("^3[CDN-FUEL] Database tables missing! Attempting auto-installation...^7")
+                local sqlContent = LoadResourceFile(GetCurrentResourceName(), "assets/sql/cdn-fuel.sql")
+                if sqlContent then
+                    -- Clean comments and split queries
+                    -- Removes comments lines starting with --
+                    sqlContent = sqlContent:gsub("%-%-[^\n]*", "") 
+                    
+                    local queries = {}
+                    for query in string.gmatch(sqlContent, "([^;]+)") do
+                        local cleanQuery = query:gsub("^%s+", ""):gsub("%s+$", "") -- Trim whitespace
+                        if cleanQuery ~= "" then
+                            table.insert(queries, cleanQuery)
+                        end
+                    end
+
+                    local totalQueries = #queries
+                    local completed = 0
+
+                    if totalQueries == 0 then
+                        print("^1[CDN-FUEL] SQL file found but no valid queries extracted.^7")
+                        return
+                    end
+
+                    print("^2[CDN-FUEL] Installing tables... ("..totalQueries.." queries)^7")
+
+                    for i, query in ipairs(queries) do
+                        MySQL.Async.execute(query, {}, function(rows)
+                            completed = completed + 1
+                            if completed == totalQueries then
+                                print("^2[CDN-FUEL] SQL installed successfully! Starting resource...^7")
+                                Wait(500)
+                                ContinueStartup()
+                            end
+                        end)
+                    end
+                else
+                    print("^1[CDN-FUEL] CRITICAL: assets/sql/cdn-fuel.sql not found! Cannot install database.^7")
+                end
+            end
+        end)
     end
 
     AddEventHandler('onResourceStart', function(resource)

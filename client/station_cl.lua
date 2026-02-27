@@ -1286,6 +1286,8 @@ if Config.PlayerOwnedGasStationsEnabled then -- This is so Player Owned Gas Stat
         local current = stationData
         Config.GasStations[newId] = current
 
+        print("[DEBUG] SyncStations called for ID: " .. newId .. " Type: " .. tostring(current.type))
+
         -- Cleanup existing props if update (prevent duplicates)
         if StationProps[newId] then
             local old = StationProps[newId]
@@ -1296,6 +1298,15 @@ if Config.PlayerOwnedGasStationsEnabled then -- This is so Player Owned Gas Stat
             end
         end
         StationProps[newId] = {} -- Init storage
+
+        if current.type == 'air' or current.type == 'water' then
+            print("[DEBUG] Triggering createDynamicAirSeaZone for ID: " .. newId)
+            TriggerEvent('cdn-fuel:client:createDynamicAirSeaZone', newId, current)
+            -- Continue execution to allow Ped spawning? 
+            -- If we want standard peds for these stations, we continue. 
+            -- If we want NO peds or different behavior, we handle it here.
+            -- For now, let's assume we still want the Ped for interaction (buying reserves, managing).
+        end
 
         -- Logic to spawn just this ped
         local model = type(current.pedmodel) == 'string' and joaat(current.pedmodel) or current.pedmodel or joaat('mp_m_shopkeep_01')
@@ -1334,8 +1345,8 @@ if Config.PlayerOwnedGasStationsEnabled then -- This is so Player Owned Gas Stat
             if Config.FuelDebug then print("Spawned dynamic charger for station #" .. newId) end
         end
 
-        -- Spawn fuel pumps if exists
-        if current.fuelpumpcoords and #current.fuelpumpcoords > 0 then
+        -- Spawn fuel pumps if exists AND not air/water (since they use dynamic zones/props or none)
+        if current.fuelpumpcoords and #current.fuelpumpcoords > 0 and (current.type ~= 'air' and current.type ~= 'water') then
             StationProps[newId].pumps = {}
             local pumpModel = GetHashKey('prop_gas_pump_1d')
             RequestAndLoadModel(pumpModel)

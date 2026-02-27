@@ -43,7 +43,12 @@ FinalizeStation = function(pedCoords, elecCoords, pumpCoordsList)
         {type = 'input', label = 'Nome do Posto', required = true},
         {type = 'number', label = 'Preço de Compra', default = 150000, required = true},
         {type = 'checkbox', label = 'Status do Posto (Marcado = Ativo)', checked = true},
-        {type = 'input', label = 'Modelo do Ped', default = 'a_m_m_indian_01', required = true}
+        {type = 'input', label = 'Modelo do Ped', default = 'a_m_m_indian_01', required = true},
+        {type = 'select', label = 'Tipo de Posto', options = {
+            { value = 'car', label = 'Veículos (Padrão)' },
+            { value = 'air', label = 'Aeronaves (Avião/Heli)' },
+            { value = 'water', label = 'Embarcações (Barcos)' }
+        }, default = 'car', required = true}
     })
 
     if not input then 
@@ -54,7 +59,9 @@ FinalizeStation = function(pedCoords, elecCoords, pumpCoordsList)
     local label = input[1]
     local cost = input[2]
     local isActive = input[3]
+    local isActive = input[3]
     local pedModel = input[4] or 'a_m_m_indian_01'
+    local stationType = input[5] or 'car'
     local shutoff = not isActive -- If Active (true), Shutoff is false.
     
     -- Auto-calculate height (hidden from user)
@@ -88,8 +95,11 @@ FinalizeStation = function(pedCoords, elecCoords, pumpCoordsList)
         fuelpumpcoords = fuelpumpcoords,
         minz = minz,
         maxz = maxz,
+        minz = minz,
+        maxz = maxz,
         shutoff = shutoff,
-        pedmodel = pedModel
+        pedmodel = pedModel,
+        type = stationType
     })
     
     ClearCreation()
@@ -334,13 +344,14 @@ RegisterCommand('createfuel', function()
                     local bottomRight = vector3(p2.x, p2.y, minZ)
                     local topRight = vector3(p2.x, p2.y, maxZ)
 
+                    local primaryRGB = Config.HexToRGB(Config.Colors.primary)
                     -- Draw both sides (two triangles per side = 4 triangles total)
                     -- Side 1
-                    DrawPoly(bottomLeft, topLeft, bottomRight, 0, 255, 0, 50)
-                    DrawPoly(topLeft, topRight, bottomRight, 0, 255, 0, 50)
+                    DrawPoly(bottomLeft, topLeft, bottomRight, primaryRGB.r, primaryRGB.g, primaryRGB.b, 50)
+                    DrawPoly(topLeft, topRight, bottomRight, primaryRGB.r, primaryRGB.g, primaryRGB.b, 50)
                     -- Side 2 (Reverse winding)
-                    DrawPoly(bottomRight, topLeft, bottomLeft, 0, 255, 0, 50)
-                    DrawPoly(bottomRight, topRight, topLeft, 0, 255, 0, 50)
+                    DrawPoly(bottomRight, topLeft, bottomLeft, primaryRGB.r, primaryRGB.g, primaryRGB.b, 50)
+                    DrawPoly(bottomRight, topRight, topLeft, primaryRGB.r, primaryRGB.g, primaryRGB.b, 50)
                     
                     -- Keep red lines for clarity at the base
                     DrawLine(bottomLeft, bottomRight, 255, 0, 0, 255)

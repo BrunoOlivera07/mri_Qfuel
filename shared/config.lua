@@ -12,6 +12,20 @@ Config.FuelDecor = "_FUEL_LEVEL"        -- Do not touch! (Default: "_FUEL_LEVEL"
 Config.RefuelTime = 600                 -- Highly recommended to leave at 600. This value will be multiplied times the amount the player is fueling for the progress bar and cancellation logic! DON'T GO BELOW 250, performance WILL drop!
 Config.FuelTargetExport = false         -- DO NOT USE WITH OX_TARGET! This is only used to fix this qb-target issue: https://github.com/CodineDev/cdn-fuel/issues/3. <br> <br> If you don't have this issue and haven't installed this exports in qb-target, then this should be false. Otherwise there will be an error.
 
+Config.Colors = {
+    primary = "#d341f2", -- Default Green (Tailwind green-500)
+    hover = "#d241f2b7"    -- Default Green Hover (Tailwind green-600)
+}
+
+function Config.HexToRGB(hex)
+    hex = hex:gsub("#","")
+    return {
+        r = tonumber("0x"..hex:sub(1,2)),
+        g = tonumber("0x"..hex:sub(3,4)),
+        b = tonumber("0x"..hex:sub(5,6))
+    }
+end
+
 -- 2.1.1 Update --
 Config.OwnersPickupFuel = true -- If an owner buys fuel, they will have to go pick it up at a configured location.
 Config.PossibleDeliveryTrucks = {
@@ -63,7 +77,7 @@ Config.Ox = {
     Progress = true     -- Uses Ox ProgressBar instead of progressbar.
 }
 Config.TargetResource =
-"qb-target"            -- Supported: { 'qb-target', 'ox_target'} -- Others must use the same format as QB-Target or manual configuration is required.
+"ox_target"            -- Supported: { 'qb-target', 'ox_target'} -- Others must use the same format as QB-Target or manual configuration is required.
 Config.PumpHose = true -- If true, it creates a hose from the pump to the nozzle the client is holding, to give it a more realistic feel.
 Config.RopeType = {    -- Options: 1-2-3-4-5; 1: Khaki Color, Kind of Thick, 2: Very Thick Khaki Rope, 3: Very Thick Black Rope, 4: Very Thin Black Rope, 5: Same as 3
     ['fuel'] = 3,
@@ -258,7 +272,7 @@ Config.AirAndWaterVehicleFueling = {
             },
             ['prop'] = {
                 ['model'] = 'prop_gas_pump_1d',
-                ['coords'] = vector4(442.08, -977.15, 42.69, 269.52),
+                ['coords'] = vector4(443.08, -978.15, 47.08, 269.52),
             }
         },
         -- Pillbox Hospital

@@ -68,7 +68,8 @@ RegisterNetEvent('cdn-fuel:server:createStation', function(data)
         minz = data.minz,
         maxz = data.maxz,
         pumpheightadd = 2.1, -- Default
-        shutoff = data.shutoff or false
+        shutoff = data.shutoff or false,
+        type = data.type or 'car' -- Default to car
     }
 
     -- 1. Update Memory
@@ -83,7 +84,9 @@ RegisterNetEvent('cdn-fuel:server:createStation', function(data)
         maxz = newStation.maxz,
         pumpheightadd = 2.1,
         shutoff = newStation.shutoff,
+        shutoff = newStation.shutoff,
         pedmodel = data.pedmodel, -- Store pedmodel in config
+        type = newStation.type,
         electricchargercoords = nil
     }
     if newStation.electricchargercoords then
@@ -108,8 +111,9 @@ RegisterNetEvent('cdn-fuel:server:createStation', function(data)
     local pedCoordsJson = json.encode(newStation.pedcoords)
     local elecCoordsJson = json.encode(newStation.electricchargercoords) -- Will be "null" if nil
     local fuelPumpCoordsJson = json.encode(data.fuelpumpcoords) -- New column
+    local type = newStation.type
 
-    MySQL.Async.execute('INSERT INTO fuel_stations (location, label, cost, fuel, fuelprice, balance, zones, minz, maxz, pedmodel, pedcoords, shutoff, pumpheightadd, electricchargercoords, fuelpumpcoords) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+    MySQL.Async.execute('INSERT INTO fuel_stations (location, label, cost, fuel, fuelprice, balance, zones, minz, maxz, pedmodel, pedcoords, shutoff, pumpheightadd, electricchargercoords, fuelpumpcoords, type) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
         {
             newId, 
             newStation.label, 
@@ -125,7 +129,8 @@ RegisterNetEvent('cdn-fuel:server:createStation', function(data)
             newStation.shutoff,
             2.1,
             elecCoordsJson,
-            fuelPumpCoordsJson
+            fuelPumpCoordsJson,
+            type
         }, function(rows)
             if rows > 0 then
                 TriggerClientEvent('QBCore:Notify', src, 'Posto criado com sucesso! ID: ' .. newId, 'success')
@@ -186,13 +191,20 @@ local function LoadStationsFromDB()
                     pedmodel = dbStation.pedmodel, -- Load customized ped model
                     pumpheightadd = tonumber(dbStation.pumpheightadd) or 2.1,
                     shutoff = dbStation.shutoff == 1 or dbStation.shutoff == true, -- Handle MySQL boolean/tinyint
+                    shutoff = dbStation.shutoff == 1 or dbStation.shutoff == true, -- Handle MySQL boolean/tinyint
                     electricchargercoords = elecVec,
                     fuelpumpcoords = pumpVecs,
-                    logo = dbStation.logo -- Load Logo URL
+                    logo = dbStation.logo, -- Load Logo URL
+                    type = dbStation.type or 'car' -- Load Type
                 }
                 count = count + 1
             end
             print("^2[CDN-FUEL] Loaded " .. count .. " gas stations from DATABASE.^7")
+            
+            -- Force Sync to all clients after load (Fixes first-run race condition)
+            for id, station in pairs(Config.GasStations) do
+                TriggerClientEvent('cdn-fuel:client:syncStations', -1, id, station)
+            end
         end
     end)
 end

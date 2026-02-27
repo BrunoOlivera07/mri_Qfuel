@@ -640,16 +640,10 @@ if Config.ElectricVehicleCharging then
     end)
 
     -- Target
-    local TargetResource = Config.TargetResource
     if Config.TargetResource == 'ox_target' then
-        TargetResource = 'qb-target'
-    end
-
-    exports[TargetResource]:AddTargetModel('electric_charger', {
-        options = {
+        exports.ox_target:addModel('electric_charger', {
             {
-                num = 1,
-                type = "client",
+                name = 'grab_electric_nozzle',
                 event = "cdn-fuel:client:grabelectricnozzle",
                 icon = "fas fa-bolt",
                 label = Lang:t("grab_electric_nozzle"),
@@ -657,11 +651,11 @@ if Config.ElectricVehicleCharging then
                     if not IsHoldingElectricNozzle() and not IsPedInAnyVehicle(PlayerPedId()) then
                         return true
                     end
-                end
+                end,
+                distance = 2.0
             },
             {
-                num = 2,
-                type = "client",
+                name = 'return_nozzle',
                 event = "cdn-fuel:client:returnnozzle",
                 icon = "fas fa-hand",
                 label = Lang:t("return_nozzle"),
@@ -669,9 +663,39 @@ if Config.ElectricVehicleCharging then
                     if IsHoldingElectricNozzle() and not refueling then
                         return true
                     end
-                end
+                end,
+                distance = 2.0
             },
-        },
-        distance = 2.0
-    })
+        })
+    else
+        exports['qb-target']:AddTargetModel('electric_charger', {
+            options = {
+                {
+                    num = 1,
+                    type = "client",
+                    event = "cdn-fuel:client:grabelectricnozzle",
+                    icon = "fas fa-bolt",
+                    label = Lang:t("grab_electric_nozzle"),
+                    canInteract = function()
+                        if not IsHoldingElectricNozzle() and not IsPedInAnyVehicle(PlayerPedId()) then
+                            return true
+                        end
+                    end
+                },
+                {
+                    num = 2,
+                    type = "client",
+                    event = "cdn-fuel:client:returnnozzle",
+                    icon = "fas fa-hand",
+                    label = Lang:t("return_nozzle"),
+                    canInteract = function()
+                        if IsHoldingElectricNozzle() and not refueling then
+                            return true
+                        end
+                    end
+                },
+            },
+            distance = 2.0
+        })
+    end
 end

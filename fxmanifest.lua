@@ -6,6 +6,8 @@ version '2.1.9'
 
 ui_page 'web/dist/index.html'
 
+sql 'assets/sql/cdn-fuel.sql'
+
 files {
     'web/dist/index.html',
     'web/dist/assets/*.js',

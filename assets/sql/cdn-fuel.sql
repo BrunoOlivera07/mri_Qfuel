@@ -1,6 +1,6 @@
 -- --------------------------------------------------------
 -- CDN-Fuel Master Database Schema
--- Organized & Filtered (Standard Stations 1-27)
+-- Optimized for QBCore/Qbox
 -- --------------------------------------------------------
 
 --
@@ -26,42 +26,42 @@ CREATE TABLE IF NOT EXISTS `fuel_stations` (
   `electricchargercoords` text DEFAULT NULL,
   `fuelpumpcoords` longtext DEFAULT NULL,
   `logo` longtext DEFAULT NULL,
+  `type` varchar(50) DEFAULT 'car',
   PRIMARY KEY (`location`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
--- Table structure for `fuel_sales_log`
+-- Table structure for `fuel_station_sales`
 --
 
-CREATE TABLE IF NOT EXISTS `fuel_sales_log` (
+CREATE TABLE IF NOT EXISTS `fuel_station_sales` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `station_id` int(11) NOT NULL,
-  `buyer_identifier` varchar(50) DEFAULT NULL,
-  `buyer_name` varchar(100) DEFAULT NULL,
-  `liters` float NOT NULL,
-  `cost` int(11) NOT NULL,
-  `timestamp` timestamp NOT NULL DEFAULT current_timestamp(),
-  PRIMARY KEY (`id`),
-  KEY `station_id` (`station_id`)
+  `station_location` int(11) NOT NULL,
+  `buyer_name` varchar(50) DEFAULT NULL,
+  `amount` float DEFAULT NULL,
+  `cost` int(11) DEFAULT NULL,
+  `payment_type` varchar(20) DEFAULT NULL,
+  `date` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
--- Table structure for `fuel_weekly_logs`
+-- Table structure for `fuel_station_weekly_logs`
 --
 
-CREATE TABLE IF NOT EXISTS `fuel_weekly_logs` (
+CREATE TABLE IF NOT EXISTS `fuel_station_weekly_logs` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `station_id` int(11) NOT NULL,
-  `week_start` date NOT NULL,
-  `total_liters` float DEFAULT 0,
-  `total_sales` int(11) DEFAULT 0,
-  `revenue` int(11) DEFAULT 0,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_station_week` (`station_id`, `week_start`)
+  `station_location` int(11) DEFAULT NULL,
+  `start_date` datetime DEFAULT NULL,
+  `end_date` datetime DEFAULT NULL,
+  `total_liters` int(11) DEFAULT 0,
+  `peak_liters` int(11) DEFAULT 0,
+  `total_revenue` int(11) DEFAULT 0,
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
--- Dumping data for table `fuel_stations`
+-- Default Fuel Stations Data (Locations 1-27)
 --
 
 INSERT INTO `fuel_stations` (`location`, `owned`, `owner`, `fuel`, `fuelprice`, `balance`, `label`, `shutoff`, `zones`, `minz`, `maxz`, `pedmodel`, `pedcoords`, `cost`, `pumpheightadd`, `electricchargercoords`, `fuelpumpcoords`, `logo`) VALUES
@@ -92,3 +92,28 @@ INSERT INTO `fuel_stations` (`location`, `owned`, `owner`, `fuel`, `fuelprice`, 
 	(25, 0, '0', 50000, 3, 0, 'Palmino Freeway Ron', 0, '[{"x":2540.15,"y":373.86},{"x":2538.26,"y":345.83},{"x":2592.8,"y":343.56},{"x":2594.7,"y":369.7},{"x":2557.58,"y":384.85}]', 107.4, 109.4, 'a_m_m_indian_01', '{"x":2559.36,"y":373.68,"z":107.62,"w":272.2}', 100000, 2.1, '{"x":2561.24,"y":357.3,"z":107.62,"w":86.65}', NULL, NULL),
 	(26, 0, '0', 50000, 3, 0, 'North Rockford LTD', 0, '[{"x":-1820.41,"y":767.31},{"x":-1775.49,"y":802.95},{"x":-1798.5,"y":828.42},{"x":-1841.71,"y":791.66}]', 136.64, 139.9, 'a_m_m_indian_01', '{"x":-1825.33,"y":800.96,"z":137.1,"w":220.96}', 100000, 2.1, '{"x":-1819.22,"y":798.51,"z":137.16,"w":135.13}', NULL, NULL),
 	(27, 0, '0', 50000, 3, 0, 'Alta Street Globe Oil', 0, '[{"x":-354.55,"y":-1452.65},{"x":-354.17,"y":-1499.62},{"x":-301.52,"y":-1497.73},{"x":-296.59,"y":-1453.03}]', 29.5, 31.9, 'a_m_m_indian_01', '{"x":-342.37,"y":-1482.97,"z":29.71,"w":273.47}', 100000, 2.1, '{"x":-341.63,"y":-1459.39,"z":29.76,"w":91.73}', NULL, NULL);
+
+--
+-- Aircraft & Boat Configured Stations
+--
+
+INSERT INTO `fuel_stations` (`location`, `owned`, `owner`, `fuel`, `fuelprice`, `balance`, `label`, `shutoff`, `zones`, `minz`, `maxz`, `pedmodel`, `pedcoords`, `cost`, `pumpheightadd`, `electricchargercoords`, `type`) VALUES
+    (28, 0, '0', 50000, 3, 0, 'Posto da Praça', 1, '[{"y":-891.0625610351563,"x":224.91734313964845},{"y":-882.1166381835938,"x":200.51296997070313},{"y":-895.1287841796875,"x":194.76559448242188},{"y":-904.0296020507813,"x":219.8187255859375},{"y":-891.0941772460938,"x":224.9228973388672}]', 26.0, 38.0, 'a_m_m_indian_01', '{"w":255.558349609375,"z":28.84530258178711,"y":-897.0052490234375,"x":218.39102172851563}', 100000, 2.1, NULL, 'car'),
+    (29, 0, '0', 50000, 3, 0, 'MRPD Helipad', 0, '[{"x":439.96,"y":-973.0},{"x":458.09,"y":-973.04},{"x":458.26,"y":-989.47},{"x":439.58,"y":-989.94}]', 40.0, 50.0, 'a_m_m_indian_01', '{"x":443.08,"y":-978.15,"z":47.08,"w":269.52}', 100000, 2.1, NULL, 'air'),
+    (30, 0, '0', 50000, 3, 0, 'Pillbox Hospital', 0, '[{"x":340.46,"y":-580.02},{"x":351.11,"y":-575.06},{"x":360.2,"y":-578.35},{"x":364.99,"y":-588.36},{"x":361.57,"y":-597.44},{"x":351.71,"y":-601.99},{"x":342.19,"y":-598.38},{"x":337.23,"y":-587.49}]', 72.5, 78.5, 'a_m_m_indian_01', '{"x":362.65,"y":-592.64,"z":73.16,"w":71.26}', 100000, 2.1, NULL, 'air'),
+    (31, 0, '0', 50000, 3, 0, 'Central Los Santos Medical Center', 0, '[{"x":287.81,"y":-1454.52},{"x":298.6,"y":-1441.48},{"x":325.74,"y":-1464.21},{"x":314.95,"y":-1477.29}]', 43.0, 50.5, 'a_m_m_indian_01', '{"x":301.12,"y":-1465.61,"z":45.51,"w":321.3}', 100000, 2.1, NULL, 'air'),
+    (32, 0, '0', 50000, 3, 0, 'Devin Weston Terminal', 0, '[{"x":-944.57,"y":-2963.51},{"x":-954.6,"y":-2981.75},{"x":-929.13,"y":-2996.81},{"x":-918.35,"y":-2978.74}]', 11.0, 19.5, 'a_m_m_indian_01', '{"x":-923.12,"y":-2976.81,"z":12.95,"w":149.55}', 100000, 2.1, NULL, 'air'),
+    (33, 0, '0', 50000, 3, 0, 'Back Right Terminal', 0, '[{"x":-1658.47,"y":-3109.69},{"x":-1645.78,"y":-3085.85},{"x":-1664.28,"y":-3074.94},{"x":-1677.93,"y":-3098.61}]', 12.0, 19.5, 'a_m_m_indian_01', '{"x":-1665.44,"y":-3104.53,"z":12.94,"w":329.89}', 100000, 2.1, NULL, 'air'),
+    (34, 0, '0', 50000, 3, 0, 'La Puerta Helicopter Pad 1', 0, '[{"x":-701.34,"y":-1441.48},{"x":-728.05,"y":-1473.15},{"x":-712.1,"y":-1486.4},{"x":-685.58,"y":-1454.86}]', 4.0, 10.5, 'a_m_m_indian_01', '{"x":-706.13,"y":-1464.14,"z":4.04,"w":320.0}', 100000, 2.1, NULL, 'air'),
+    (35, 0, '0', 50000, 3, 0, 'La Puerta Helicopter Pad 2', 0, '[{"x":-777.17,"y":-1446.61},{"x":-761.78,"y":-1459.59},{"x":-739.92,"y":-1433.25},{"x":-755.4,"y":-1420.29}]', 4.0, 10.5, 'a_m_m_indian_01', '{"x":-764.81,"y":-1434.32,"z":4.06,"w":320.0}', 100000, 2.1, NULL, 'air'),
+    (36, 0, '0', 50000, 3, 0, 'La Puerta Boat Dock 1', 0, '[{"x":-793.1,"y":-1482.94},{"x":-786.39,"y":-1500.85},{"x":-809.39,"y":-1508.94},{"x":-817.48,"y":-1491.62}]', -5.0, 8.5, 'a_m_m_indian_01', '{"x":-805.9,"y":-1496.68,"z":0.6,"w":200.0}', 100000, 2.1, NULL, 'water'),
+    (37, 0, '0', 50000, 3, 0, 'Fort Zancudo Military Base Hangar', 0, '[{"x":-2145.24,"y":3291.63},{"x":-2127.94,"y":3281.7},{"x":-2139.37,"y":3260.35},{"x":-2157.69,"y":3271.1}]', 30.0, 37.5, 'a_m_m_indian_01', '{"x":-2148.8,"y":3283.99,"z":31.81,"w":240.0}', 100000, 2.1, NULL, 'air'),
+    (38, 0, '0', 50000, 3, 0, 'Paleto Bay Police Department', 0, '[{"x":-497.03,"y":5987.98},{"x":-476.48,"y":6008.6},{"x":-454.99,"y":5986.53},{"x":-475.77,"y":5966.83}]', 30.0, 37.5, 'a_m_m_indian_01', '{"x":-486.22,"y":5977.65,"z":30.3,"w":315.4}', 100000, 2.1, NULL, 'air'),
+    (39, 0, '0', 50000, 3, 0, 'Grapeseed Airfield', 0, '[{"x":2094.41,"y":4771.26},{"x":2080.85,"y":4797.71},{"x":2104.56,"y":4811.8},{"x":2118.06,"y":4782.09}]', 40.0, 47.5, 'a_m_m_indian_01', '{"x":2101.82,"y":4776.8,"z":40.02,"w":21.41}', 100000, 2.1, NULL, 'air'),
+    (40, 0, '0', 50000, 3, 0, 'Grapeseed Airfield Water', 0, '[{"x":1347.76,"y":4277.37},{"x":1330.47,"y":4279.02},{"x":1328.53,"y":4261.64},{"x":1346.13,"y":4260.88}]', 28.0, 37.5, 'a_m_m_indian_01', '{"x":1338.13,"y":4269.62,"z":30.5,"w":85.0}', 100000, 2.1, NULL, 'water'),
+    (41, 0, '0', 50000, 3, 0, 'Bob Smith PD', 0, '[{"x":-1083.85,"y":-837.07},{"x":-1100.36,"y":-849.84},{"x":-1108.85,"y":-839.11},{"x":-1107.04,"y":-837.76},{"x":-1109.65,"y":-834.04},{"x":-1104.1,"y":-829.69},{"x":-1104.29,"y":-829.07},{"x":-1095.62,"y":-822.42}]', 36.0, 42.5, 'a_m_m_indian_01', '{"x":-1089.72,"y":-830.6,"z":36.68,"w":129.0}', 100000, 2.1, NULL, 'air'),
+    (42, 0, '0', 50000, 3, 0, 'Merryweather Helipad', 0, '[{"x":488.84,"y":-3383.66},{"x":489.23,"y":-3356.98},{"x":467.46,"y":-3356.83},{"x":467.58,"y":-3383.62},{"x":472.59,"y":-3383.59},{"x":472.63,"y":-3382.13},{"x":476.67,"y":-3382.11},{"x":476.8,"y":-3383.94}]', 4.5, 10.5, 'a_m_m_indian_01', '{"x":483.28,"y":-3382.83,"z":5.07,"w":0.0}', 100000, 2.1, NULL, 'air'),
+    (43, 0, '0', 50000, 3, 0, 'Airport Helipad 1 and 2', 0, '[{"x":-1133.49,"y":-2860.32},{"x":-1143.33,"y":-2877.61},{"x":-1191.03,"y":-2850.14},{"x":-1180.98,"y":-2832.84}]', 12.5, 18.5, 'a_m_m_indian_01', '{"x":-1158.29,"y":-2848.67,"z":12.95,"w":240.0}', 100000, 2.1, NULL, 'air'),
+    (44, 0, '0', 50000, 3, 0, 'Airport Helipad 3', 0, '[{"x":-1124.63,"y":-2865.31},{"x":-1134.74,"y":-2882.56},{"x":-1108.76,"y":-2897.71},{"x":-1099.04,"y":-2880.39}]', 12.5, 18.5, 'a_m_m_indian_01', '{"x":-1125.15,"y":-2866.97,"z":12.95,"w":240.0}', 100000, 2.1, NULL, 'air'),
+    (45, 0, '0', 50000, 3, 0, 'Sandy Shores Helipad', 0, '[{"x":1764.15,"y":3226.34},{"x":1758.66,"y":3246.44},{"x":1777.28,"y":3250.51},{"x":1781.89,"y":3230.8}]', 40.5, 47.5, 'a_m_m_indian_01', '{"x":1771.81,"y":3229.24,"z":41.51,"w":15.0}', 100000, 2.1, NULL, 'air'),
+    (46, 0, '0', 50000, 3, 0, 'Sandy Shores Hangar', 0, '[{"x":1755.37,"y":3301.3},{"x":1764.9,"y":3294.63},{"x":1769.42,"y":3277.19},{"x":1728.83,"y":3266.58},{"x":1721.75,"y":3291.6}]', 40.0, 47.5, 'a_m_m_indian_01', '{"x":1748.31,"y":3297.08,"z":40.16,"w":15.0}', 100000, 2.1, NULL, 'air');
