@@ -218,22 +218,27 @@ if Config.ShowNearestGasStationOnly then
 			for _, ourCoords in pairs(Config.GasStations) do
 				location = location + 1
 				if not (location > #Config.GasStations) then -- Make sure we are not going over the amount of locations available.
-					local gasStationCoords = vector3(Config.GasStations[location].pedcoords.x, Config.GasStations[location].pedcoords.y, Config.GasStations[location].pedcoords.z)
-					local dstcheck = #(coords - gasStationCoords)
-					if dstcheck < closest then
-						closest = dstcheck
-						closestCoords = gasStationCoords
-						closestLocation = location
-						label = Config.GasStations[closestLocation].label
-					end
+                    local station = Config.GasStations[location]
+					if station and station.pedcoords then
+                        local gasStationCoords = vector3(station.pedcoords.x, station.pedcoords.y, station.pedcoords.z)
+                        local dstcheck = #(coords - gasStationCoords)
+                        if dstcheck < closest then
+                            closest = dstcheck
+                            closestCoords = gasStationCoords
+                            closestLocation = location
+                            label = Config.GasStations[closestLocation].label
+                        end
+                    end
 				else
 					break
 				end
 			end
-			if DoesBlipExist(currentGasBlip) then
-				RemoveBlip(currentGasBlip)
-			end
-			currentGasBlip = CreateBlip(closestCoords, label)
+			if closestCoords then
+                if DoesBlipExist(currentGasBlip) then
+                    RemoveBlip(currentGasBlip)
+                end
+                currentGasBlip = CreateBlip(closestCoords, label)
+            end
 			Wait(10000)
 		end
 	end)
@@ -254,33 +259,41 @@ else
 		local gasStationCoords
 		for i = 1, #Config.GasStations, 1 do
 			local location = i
-			gasStationCoords = vector3(Config.GasStations[location].pedcoords.x, Config.GasStations[location].pedcoords.y, Config.GasStations[location].pedcoords.z)
-			GasStationBlips[location] = CreateBlip(gasStationCoords, Config.GasStations[location].label)
+            local station = Config.GasStations[location]
+            if station and station.pedcoords then
+                gasStationCoords = vector3(station.pedcoords.x, station.pedcoords.y, station.pedcoords.z)
+                GasStationBlips[location] = CreateBlip(gasStationCoords, station.label)
+            end
 		end
 	end)
 end
 
 CreateThread(function()
 	for station_id = 1, #Config.GasStations, 1 do
-		Stations[station_id] = PolyZone:Create(Config.GasStations[station_id].zones, {
-			name = "CDN_FUEL_GAS_STATION_"..station_id,
-			minZ = Config.GasStations[station_id].minz,
-			maxZ = Config.GasStations[station_id].maxz,
-			debugPoly = Config.PolyDebug
-		})
-		Stations[station_id]:onPlayerInOut(function(isPointInside)
-			if isPointInside then
-				inGasStation = true
-				CurrentLocation = station_id
-				if Config.FuelDebug then print("New Location: "..station_id) end
-				if Config.PlayerOwnedGasStationsEnabled then
-					TriggerEvent('cdn-fuel:stations:updatelocation', station_id)
-				end
-			else
-				TriggerEvent('cdn-fuel:stations:updatelocation', nil)
-				inGasStation = false
-			end
-		end)
+        local station = Config.GasStations[station_id]
+        if station and station.zones and #station.zones >= 3 then
+            Stations[station_id] = PolyZone:Create(station.zones, {
+                name = "CDN_FUEL_GAS_STATION_"..station_id,
+                minZ = station.minz,
+                maxZ = station.maxz,
+                debugPoly = Config.PolyDebug
+            })
+            Stations[station_id]:onPlayerInOut(function(isPointInside)
+                if isPointInside then
+                    inGasStation = true
+                    CurrentLocation = station_id
+                    if Config.FuelDebug then print("New Location: "..station_id) end
+                    if Config.PlayerOwnedGasStationsEnabled then
+                        TriggerEvent('cdn-fuel:stations:updatelocation', station_id)
+                    end
+                else
+                    TriggerEvent('cdn-fuel:stations:updatelocation', nil)
+                    inGasStation = false
+                end
+            end)
+        else
+            print("[CDN-FUEL] Warning: Station #" .. station_id .. " has invalid zones (missing or < 3 points). PolyZone skipped.")
+        end
 	end
 end)
 

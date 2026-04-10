@@ -180,6 +180,14 @@ local function LoadStationsFromDB()
                     table.insert(pumpVecs, vector4(p.x, p.y, p.z, p.w))
                 end
 
+                -- Validation
+                if not pedVec then
+                    print("^3[CDN-FUEL] Warning: Station ID " .. id .. " (" .. dbStation.label .. ") has missing or invalid pedcoords.^7")
+                end
+                if #convertedZones < 3 then
+                    print("^3[CDN-FUEL] Warning: Station ID " .. id .. " (" .. dbStation.label .. ") has invalid zones (less than 3 points).^7")
+                end
+
                 -- Update Config
                 Config.GasStations[id] = {
                     label = dbStation.label,
@@ -190,7 +198,6 @@ local function LoadStationsFromDB()
                     maxz = tonumber(dbStation.maxz),
                     pedmodel = dbStation.pedmodel, -- Load customized ped model
                     pumpheightadd = tonumber(dbStation.pumpheightadd) or 2.1,
-                    shutoff = dbStation.shutoff == 1 or dbStation.shutoff == true, -- Handle MySQL boolean/tinyint
                     shutoff = dbStation.shutoff == 1 or dbStation.shutoff == true, -- Handle MySQL boolean/tinyint
                     electricchargercoords = elecVec,
                     fuelpumpcoords = pumpVecs,

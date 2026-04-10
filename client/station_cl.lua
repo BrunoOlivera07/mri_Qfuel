@@ -54,25 +54,29 @@ if Config.PlayerOwnedGasStationsEnabled then -- This is so Player Owned Gas Stat
         if not Config.GasStations or not next(Config.GasStations) or PedsSpawned then return end
         for i = 1, #Config.GasStations do
             local current = Config.GasStations[i]
-            current.pedmodel = type(current.pedmodel) == 'string' and joaat(current.pedmodel) or current.pedmodel
-            RequestAndLoadModel(current.pedmodel)
-            local ped = CreatePed(0, current.pedmodel, current.pedcoords.x, current.pedcoords.y, current.pedcoords.z, current.pedcoords.w, false, false)
-            FreezeEntityPosition(ped, true)
-            SetEntityInvincible(ped, true)
-            SetBlockingOfNonTemporaryEvents(ped, true)
-            exports['qb-target']:AddTargetEntity(ped, {
-                options = {
-                    {
-                        type = "client",
-                        label = Lang:t("station_talk_to_ped"),
-                        icon = "fas fa-building",
-                        action = function()
-                            TriggerEvent('cdn-fuel:stations:openmenu', i)
-                        end,
+            if current and current.pedcoords then
+                current.pedmodel = type(current.pedmodel) == 'string' and joaat(current.pedmodel) or current.pedmodel or joaat('a_m_m_indian_01')
+                RequestAndLoadModel(current.pedmodel)
+                local ped = CreatePed(0, current.pedmodel, current.pedcoords.x, current.pedcoords.y, current.pedcoords.z, current.pedcoords.w, false, false)
+                FreezeEntityPosition(ped, true)
+                SetEntityInvincible(ped, true)
+                SetBlockingOfNonTemporaryEvents(ped, true)
+                exports['qb-target']:AddTargetEntity(ped, {
+                    options = {
+                        {
+                            type = "client",
+                            label = Lang:t("station_talk_to_ped"),
+                            icon = "fas fa-building",
+                            action = function()
+                                TriggerEvent('cdn-fuel:stations:openmenu', i)
+                            end,
+                        },
                     },
-                },
-                distance = 2.0
-            })
+                    distance = 2.0
+                })
+            else
+                if Config.FuelDebug then print("[CDN-FUEL] Skip spawning ped for station ID: " .. i .. " due to missing pedcoords.") end
+            end
         end
         PedsSpawned = true
     end
@@ -1308,31 +1312,35 @@ if Config.PlayerOwnedGasStationsEnabled then -- This is so Player Owned Gas Stat
             -- For now, let's assume we still want the Ped for interaction (buying reserves, managing).
         end
 
-        -- Logic to spawn just this ped
-        local model = type(current.pedmodel) == 'string' and joaat(current.pedmodel) or current.pedmodel or joaat('mp_m_shopkeep_01')
-        RequestAndLoadModel(model)
-        
-        local ped = CreatePed(0, model, current.pedcoords.x, current.pedcoords.y, current.pedcoords.z, current.pedcoords.w, false, false)
-        FreezeEntityPosition(ped, true)
-        SetEntityInvincible(ped, true)
-        SetBlockingOfNonTemporaryEvents(ped, true)
-        StationProps[newId].ped = ped -- Track it
-        
-        exports['qb-target']:AddTargetEntity(ped, {
-            options = {
-                {
-                    type = "client",
-                    label = Lang:t("station_talk_to_ped"),
-                    icon = "fas fa-building",
-                    action = function()
-                        TriggerEvent('cdn-fuel:stations:openmenu', newId)
-                    end,
+        if current.pedcoords then
+            -- Logic to spawn just this ped
+            local model = type(current.pedmodel) == 'string' and joaat(current.pedmodel) or current.pedmodel or joaat('mp_m_shopkeep_01')
+            RequestAndLoadModel(model)
+            
+            local ped = CreatePed(0, model, current.pedcoords.x, current.pedcoords.y, current.pedcoords.z, current.pedcoords.w, false, false)
+            FreezeEntityPosition(ped, true)
+            SetEntityInvincible(ped, true)
+            SetBlockingOfNonTemporaryEvents(ped, true)
+            StationProps[newId].ped = ped -- Track it
+            
+            exports['qb-target']:AddTargetEntity(ped, {
+                options = {
+                    {
+                        type = "client",
+                        label = Lang:t("station_talk_to_ped"),
+                        icon = "fas fa-building",
+                        action = function()
+                            TriggerEvent('cdn-fuel:stations:openmenu', newId)
+                        end,
+                    },
                 },
-            },
-            distance = 2.0
-        })
-        
-        if Config.FuelDebug then print("Spawned dynamic ped for station #" .. newId) end
+                distance = 2.0
+            })
+            if Config.FuelDebug then print("Spawned dynamic ped for station #" .. newId) end
+        else
+            print("[CDN-FUEL] Warning: Station #" .. newId .. " is missing pedcoords. Interaction ped will not be spawned.")
+            if Config.FuelDebug then print("Station Data: " .. json.encode(current)) end
+        end
 
         -- Spawn electric charger if exists
         if current.electricchargercoords then
