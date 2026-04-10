@@ -154,6 +154,15 @@ end)
 
 -- DATABASE MIGRATION & LOADING LOGIC --
 
+-- Helper to ensure data is a table (handles oxmysql auto-json-parsing)
+local function EnsureTable(data)
+    if type(data) == "string" then
+        local decoded = json.decode(data)
+        return type(decoded) == "table" and decoded or {}
+    end
+    return type(data) == "table" and data or {}
+end
+
 local function LoadStationsFromDB()
     MySQL.Async.fetchAll('SELECT * FROM fuel_stations', {}, function(stations)
         if stations then
@@ -161,23 +170,27 @@ local function LoadStationsFromDB()
             for _, dbStation in ipairs(stations) do
                 local id = tonumber(dbStation.location)
                 
-                -- Parse JSON fields
-                local zones = dbStation.zones and json.decode(dbStation.zones) or {}
+                -- Parse JSON fields safely
+                local zones = EnsureTable(dbStation.zones)
                 local convertedZones = {}
                 for _, z in ipairs(zones) do
-                    table.insert(convertedZones, vector2(z.x, z.y))
+                    if type(z) == "table" and z.x and z.y then
+                        table.insert(convertedZones, vector2(z.x, z.y))
+                    end
                 end
 
-                local pedcoords = dbStation.pedcoords and json.decode(dbStation.pedcoords)
-                local pedVec = pedcoords and vector4(pedcoords.x, pedcoords.y, pedcoords.z, pedcoords.w) or nil
+                local pedcoords = EnsureTable(dbStation.pedcoords)
+                local pedVec = (pedcoords and pedcoords.x) and vector4(pedcoords.x, pedcoords.y, pedcoords.z, pedcoords.w) or nil
 
-                local elecCoords = dbStation.electricchargercoords and json.decode(dbStation.electricchargercoords)
-                local elecVec = elecCoords and vector4(elecCoords.x, elecCoords.y, elecCoords.z, elecCoords.w) or nil
+                local elecCoords = EnsureTable(dbStation.electricchargercoords)
+                local elecVec = (elecCoords and elecCoords.x) and vector4(elecCoords.x, elecCoords.y, elecCoords.z, elecCoords.w) or nil
 
-                local pumpCoords = dbStation.fuelpumpcoords and json.decode(dbStation.fuelpumpcoords) or {}
+                local pumpCoords = EnsureTable(dbStation.fuelpumpcoords)
                 local pumpVecs = {}
                 for _, p in ipairs(pumpCoords) do
-                    table.insert(pumpVecs, vector4(p.x, p.y, p.z, p.w))
+                    if type(p) == "table" and p.x and p.y then
+                        table.insert(pumpVecs, vector4(p.x, p.y, p.z, p.w))
+                    end
                 end
 
                 -- Validation
@@ -212,6 +225,9 @@ local function LoadStationsFromDB()
             for id, station in pairs(Config.GasStations) do
                 TriggerClientEvent('cdn-fuel:client:syncStations', -1, id, station)
             end
+        end
+    end)
+end
         end
     end)
 end
