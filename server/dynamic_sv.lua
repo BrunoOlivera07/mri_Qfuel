@@ -228,9 +228,6 @@ local function LoadStationsFromDB()
         end
     end)
 end
-        end
-    end)
-end
 
 -- Replace the original LoadDynamicStations with DB Loader
 function LoadDynamicStations()
