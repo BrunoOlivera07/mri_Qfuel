@@ -14,9 +14,17 @@ local function LoadStationsFromDB()
     MySQL.Async.fetchAll('SELECT * FROM fuel_stations', {}, function(stations)
         if stations then
             local count = 0
-            for _, dbStation in ipairs(stations) do
+            for i, dbStation in ipairs(stations) do
                 local id = tonumber(dbStation.location)
                 
+                -- DEBUG: Print raw data for the FIRST record found
+                if i == 1 then
+                    print("^5[CDN-FUEL DEBUG] Encontrado registro no banco:^7")
+                    for k, v in pairs(dbStation) do
+                        print("^5Campo: " .. tostring(k) .. " | Valor: " .. tostring(v) .. "^7")
+                    end
+                end
+
                 -- Parse JSON fields safely
                 local zones = EnsureTable(dbStation.zones)
                 local convertedZones = {}
@@ -227,5 +235,13 @@ RegisterCommand('migrate_json_to_sql', function(source, args, rawCommand)
                 print("^2[CDN-FUEL] Migração finalizada! " .. count .. " postos salvos no banco de dados.^7")
             end
         end)
+    end
+end, false)
+
+-- Comando de TESTE MANUAL
+RegisterCommand('testar_posto', function(source)
+    if source == 0 then -- Apenas console
+        print("^5[CDN-FUEL] Forçando recarregamento manual para debug...^7")
+        LoadStationsFromDB()
     end
 end, false)
